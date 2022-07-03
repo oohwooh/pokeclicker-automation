@@ -28,6 +28,7 @@ class AutomationTrivia
 
     static __internal__previousRegion = null;
     static __internal__displayedRoamingRoute = null;
+    static __internal__displayedCaughtStatus = null; // 0 for none, 1 for caught, 2 for caught shiny
     static __internal__currentLocationListSize = 0;
     static __internal__lastEvoStone = null;
 
@@ -52,6 +53,13 @@ class AutomationTrivia
         contentNode.classList.add("hasAutomationTooltip");
         contentNode.classList.add("centeredAutomationTooltip");
         contentNode.style.textAlign = "center";
+
+        let iconNode = document.createElement("img");
+        iconNode.id = "roamingRouteTriviaIcon";
+        iconNode.classList.add("pokeball-smallest");
+        iconNode.hidden = true;
+
+        contentNode.appendChild(iconNode);
         containerDiv.appendChild(contentNode);
 
         Automation.Menu.addSeparator(containerDiv);
@@ -287,6 +295,9 @@ class AutomationTrivia
         let currentRoamingRoute = (roamers.length > 0)
                                 ? roamingRouteData.number
                                 : -1;
+        let caughtAllRoamers = roamers.every((roamer) => App.game.party.alreadyCaughtPokemon(roamer.pokemon.id))
+        let caughtAllRoamersShiny = roamers.every((roamer) => App.game.party.alreadyCaughtPokemon(roamer.pokemon.id, true))
+        let currentCaughtStatus = (caughtAllRoamers? (caughtAllRoamersShiny? 2 : 1) : 0)
         if (this.__internal__displayedRoamingRoute !== currentRoamingRoute)
         {
             this.__internal__displayedRoamingRoute = currentRoamingRoute;
@@ -319,6 +330,14 @@ class AutomationTrivia
 
             // Hide the roaming info if there is no roamers
             document.getElementById("roamingRouteTriviaContainer").hidden = (RoamingPokemonList.getRegionalRoamers(player.region).length === 0);
+        }
+        if (this.__internal__displayedCaughtStatus !== currentCaughtStatus)
+        {
+            this.__internal__displayedCaughtStatus = currentCaughtStatus;
+            let iconElem = document.getElementById('roamingRouteTriviaIcon');
+            // We don't need to care about clearing this if false, as it will be hidden anyways
+            iconElem.src = (currentCaughtStatus === 1? 'assets/images/pokeball/Pokeball.svg' : 'assets/images/pokeball/Pokeball-shiny.svg')
+            iconElem.hidden = (currentCaughtStatus === 0)
         }
     }
 
